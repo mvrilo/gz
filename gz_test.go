@@ -25,6 +25,10 @@ func TestWrite(t *testing.T) {
 	}
 	_, err = os.Open(path)
 	checkErr(err, t)
+
+	// if everything is okay run Write again to
+	// make sure it's not appending
+	Write(path, []byte(data))
 }
 
 func TestRead(t *testing.T) {
