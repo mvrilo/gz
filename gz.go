@@ -1,54 +1,48 @@
 package gz
 
 import (
+	"bytes"
 	"compress/gzip"
-	"io"
 	"os"
 )
 
-func reader(path string) (*os.File, io.ReadCloser, error) {
+// Copied from compress/gzip package for easy access
+const (
+	NoCompression      = gzip.NoCompression
+	BestSpeed          = gzip.BestSpeed
+	BestCompression    = gzip.BestCompression
+	DefaultCompression = gzip.DefaultCompression
+)
+
+// Reads open the file given as argument and return the uncompressed data
+func Read(path string) ([]byte, int64, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		return nil, nil, err
+		return nil, 0, err
 	}
 
 	g, err := gzip.NewReader(f)
-	return f, g, err
-}
-
-func Read(path string) ([]byte, int, error) {
-	f, g, err := reader(path)
 	if err != nil {
 		return nil, 0, err
 	}
 	defer g.Close()
-	defer f.Close()
 
-	s, err := f.Stat()
+	b := new(bytes.Buffer)
+	i, err := b.ReadFrom(g)
 	if err != nil {
 		return nil, 0, err
 	}
-
-	body := make([]byte, s.Size())
-	i, err := g.Read(body)
-	if err != nil {
-		return nil, 0, err
-	}
-	return body, i, nil
+	return b.Bytes(), i, nil
 }
 
-func writer(path string, data []byte) (*os.File, io.WriteCloser, error) {
+// Writes compresed data to a file with given compression ratio. Default compression is 0 (no compression).
+func Write(path string, data []byte, compression int) (int, error) {
 	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
-		return nil, nil, err
+		return 0, err
 	}
 
 	w, err := gzip.NewWriterLevel(f, gzip.BestCompression)
-	return f, w, err
-}
-
-func Write(path string, data []byte) (int, error) {
-	f, w, err := writer(path, data)
 	if err != nil {
 		return 0, err
 	}
@@ -61,4 +55,14 @@ func Write(path string, data []byte) (int, error) {
 	defer w.Close()
 
 	return i, nil
+}
+
+// Writes compressed data to a file using BestCompression ratio.
+func WriteBest(path string, data []byte) (int, error) {
+	return Write(path, data, BestCompression)
+}
+
+// Writes compressed data to a file using BestSpeed ratio.
+func WriteFast(path string, data []byte) (int, error) {
+	return Write(path, data, BestSpeed)
 }
