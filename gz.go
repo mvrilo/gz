@@ -14,7 +14,7 @@ const (
 	DefaultCompression = gzip.DefaultCompression
 )
 
-// Reads open the file given as argument and return the uncompressed data
+// Read opens the file and return the uncompressed data
 func Read(path string) ([]byte, int64, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -35,14 +35,14 @@ func Read(path string) ([]byte, int64, error) {
 	return b.Bytes(), i, nil
 }
 
-// Writes compresed data to a file with given compression ratio. Default compression is 0 (no compression).
+// Write writes compressed data to a file with given compression ratio. Default compression is 0 (no compression).
 func Write(path string, data []byte, compression int) (int, error) {
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0666)
+	f, err := os.Create(path)
 	if err != nil {
 		return 0, err
 	}
 
-	w, err := gzip.NewWriterLevel(f, gzip.BestCompression)
+	w, err := gzip.NewWriterLevel(f, compression)
 	if err != nil {
 		return 0, err
 	}
@@ -57,12 +57,12 @@ func Write(path string, data []byte, compression int) (int, error) {
 	return i, nil
 }
 
-// Writes compressed data to a file using BestCompression ratio.
+// WriteBest writes compressed data to a file using BestCompression ratio.
 func WriteBest(path string, data []byte) (int, error) {
 	return Write(path, data, BestCompression)
 }
 
-// Writes compressed data to a file using BestSpeed ratio.
+// WriteFast writes compressed data to a file using BestSpeed ratio.
 func WriteFast(path string, data []byte) (int, error) {
 	return Write(path, data, BestSpeed)
 }

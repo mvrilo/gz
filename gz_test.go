@@ -6,24 +6,13 @@ import (
 	"testing"
 )
 
-const (
+var (
 	file = "test.txt.gz"
-	data = "this is going into the file"
+	data = []byte("this is going into the file")
 )
 
-func openFile(t *testing.T) (f *os.File) {
-	var err error
-	if f, err = os.Open(file); err != nil {
-		t.Error("Error opening file")
-	}
-	if f == nil {
-		t.Error("File returned nil")
-	}
-	return
-}
-
 func TestWrite(t *testing.T) {
-	i, err := Write(file, []byte(data), BestSpeed)
+	i, err := Write(file, data, BestSpeed)
 	if err != nil {
 		t.Error("Write returned an error: ", err.Error())
 	}
@@ -31,12 +20,7 @@ func TestWrite(t *testing.T) {
 		t.Error("Bytes returned should be more than zero")
 	}
 
-	e, _ := Write(file, []byte(data), BestSpeed)
-	if e != i {
-		t.Error("Write should not append")
-	}
-
-	i, err = Write(".", []byte(data), BestSpeed)
+	i, err = Write(".", data, BestSpeed)
 	if err == nil {
 		t.Error("Writing to a directory should return an error")
 	}
@@ -46,14 +30,14 @@ func TestWrite(t *testing.T) {
 }
 
 func TestWriteBest(t *testing.T) {
-	_, err := WriteBest(file, []byte(data))
+	_, err := WriteBest(file, data)
 	if err != nil {
 		t.Error("WriteBest returned an error: ", err.Error())
 	}
 }
 
 func TestWriteFast(t *testing.T) {
-	_, err := WriteFast(file, []byte(data))
+	_, err := WriteFast(file, data)
 	if err != nil {
 		t.Error("WriteFast returned an error: ", err.Error())
 	}
@@ -69,7 +53,7 @@ func TestRead(t *testing.T) {
 	}
 	defer os.Remove(file)
 
-	if !bytes.Equal(b, []byte(data)) {
+	if !bytes.Equal(b, data) {
 		t.Error("Data should be the same")
 	}
 
